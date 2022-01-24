@@ -7,10 +7,6 @@ except:
     print("please give two words to join in args")
     exit(1)
 
-print(str_start, str_end)
-
-dictionary = []
-nodes = []
 
 #read in dictionary
 for line in sys.stdin :

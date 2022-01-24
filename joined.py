@@ -13,8 +13,7 @@ class Node:
 
 
 def main():
-    global dictionary, nodes, end
-
+    #get words to join
     try:
         str_start = sys.argv[1]
         str_end = sys.argv[2]
@@ -25,6 +24,7 @@ def main():
     dictionary = []
     nodes = []
 
+    #put search words at the start to make the search slightly faster
     dictionary.append(str_start)
     dictionary.append(str_end)
 
@@ -41,38 +41,38 @@ def main():
     for i, word in enumerate(dictionary) :
         nodes.append(Node(i, word))
 
-    #start = nodes[dictionary.index(str_start)]
-    #end = nodes[dictionary.index(str_end)]
+    #finding where the start and end words are in the nodes list
+    start = nodes[dictionary.index(str_start)]
+    end = nodes[dictionary.index(str_end)]
 
-    start = nodes[0]
-    end = nodes[1]
+    #search for links in singled and double joined mode
+    single_len = bfs(nodes, dictionary, True)
+    double_len = bfs(nodes, dictionary, False)
 
+    #print results
     print(start.word, end.word)
-
-    single_len = bfs(nodes, dictionary, start, end, True)
-    double_len = bfs(nodes, dictionary, start, end, False)
-
-    print(single_len)
-
     print(*single_len)
     print(*double_len)
+
     exit(0)
 
 
 def bfs(nodes, dictionary, single):
     start = nodes[0]
     end = nodes[1]
-    #visit the start node
 
+    #visit the start node
     start.distance = 0
     start.visited = True
 
-
+    #queue the starting node and start the search
     queue = deque([start])
-    while(queue): #while stack still has items
+    #while stack still has items
+    while(queue): 
         node = queue.popleft()
 
-        neighbours = find_neighbours(node, single)
+        neighbours = find_neighbours(nodes, node, single)
+        print(neighbours)
 
         for node in neighbours:
             #check if we reached the end word
@@ -90,7 +90,7 @@ def bfs(nodes, dictionary, single):
     return[0]
 
 
-def find_neighbours(left, single):
+def find_neighbours(nodes, left, single):
     #minimum length of the matching part of the left word
     suffix_len = int(ceil(len(left.word))/2)
 
