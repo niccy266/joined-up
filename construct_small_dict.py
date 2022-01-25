@@ -1,34 +1,21 @@
-global dictionary, nodes, end
+from random import randint as random
+#import math
+import sys
 
-try:
-    str_start = sys.argv[1]
-    str_end = sys.argv[2]
-except:
-    print("please give two words to join in args")
-    exit(1)
-
+dictionary = []
 
 #read in dictionary
 for line in sys.stdin :
     dictionary.append(line.rstrip())
 
-#remove duplicates
-dictionary = list(dict.fromkeys(dictionary))
-for i, word in enumerate(dictionary) :
-    nodes.append(Node(i, word))
+print(len(dictionary))
 
-start = nodes[dictionary.index(str_start)]
-end = nodes[dictionary.index(str_end)]
-
-single_len = bfs(start, end, True)
-double_len = bfs(start, end, False)
-
-print(single_len)
-
-print(*single_len[0])
-print(*double_len[0])
-exit(0)
+out = []
+for i in range(100000):
+    index = random(1, len(dictionary)) - 1
+    out.append(dictionary[index])
+    dictionary.remove(dictionary[index])
 
 f = open("small_dict.txt", "w")
-f.write("Now the file has more content!")
+f.write("\n".join(out))
 f.close()
