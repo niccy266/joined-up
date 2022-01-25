@@ -53,10 +53,15 @@ def main():
     print(start.word, end.word)
 
     #search for links in singled and double joined mode and print results
-    single_len = bfs(nodes, True)
-    print(*single_len)
-    double_len = bfs(nodes, False)
-    print(*double_len)
+    if (str_start == str_end):
+        print("1", str_start, str_end)
+        print("1", str_start, str_end)
+    else:
+        single_len = bfs(nodes, True)
+        print(*single_len)
+        double_len = bfs(nodes, False)
+        print(*double_len)
+
 
     sys.exit(0)
 
