@@ -4,6 +4,7 @@ import numpy as np
 from functools import wraps
 import sys
 import queue
+from bisect import bisect
 
 
 def memoize(function):
@@ -46,19 +47,21 @@ def main():
 
     #read in dictionary
     for line in sys.stdin :
-        dictionary.append(line.rstrip())
-
-    dictionary.sort()
+        dictionary.append(line.rstrip().lower())
 
     #check if any values were read in
     if len(dictionary) == 0 :
         print("please pass a dictionary to stdin")
         sys.exit(1)
 
+    dictionary.append(str_start)
+    dictionary.append(str_end)
+
     #put search words at the start to make the search slightly faster
-    dictionary.insert(0, str_start)
-    dictionary.insert(1, str_end)
-    
+    #dictionary.insert(0, str_start)
+    #dictionary.insert(1, str_end)
+
+    dictionary.sort()
     #remove duplicates
     dictionary = list(dict.fromkeys(dictionary))
 
@@ -71,36 +74,40 @@ def main():
         halves.append(node.half)
     halves_a = np.array(halves, dtype=int)
 
-    print(dictionary[0], dictionary[1])
+    print(str_start, str_end)
     #search for links in singled and double joined mode and print results
     if (str_start == str_end):
         print("1", str_start, str_end)
         print("1", str_start, str_end)
     else:
-        single_len = bfs(dictionary, halves, True)
+        start = dictionary.index(str_start)
+        end = dictionary.index(str_end)
+        
+        single_len = bfs(dictionary, halves, True, start, end)
         print(*single_len)
-        double_len = bfs(dictionary, halves, False)
+        double_len = bfs(dictionary, halves, False, start, end)
         print(*double_len)
 
     sys.exit(0)
 
 
-def bfs(dictionary, halves, single):
-    end = dictionary[1]
+def bfs(dictionary, halves, single, start_i, end_i):
+    
+    end = dictionary[end_i]
 
     visited = np.array([False] * len(dictionary), dtype=bool)
     distance = np.array([100000] * len(dictionary), dtype=int)
 
     #visit the start node
-    distance[0] = 1
-    visited[0] = True
+    distance[start_i] = 1
+    visited[start_i] = True
 
     #hashmap = dict.fromkeys(dictionary)
     a_map = np.array([0] * len(dictionary), dtype=int)
 
     #queue the starting node and start the search
     q = queue.Queue(len(dictionary))
-    q.put(0)
+    q.put(start_i)
     #while stack still has items
     while(not q.empty()):
         l = q.get()
@@ -137,25 +144,34 @@ def find_neighbours_single(dictionary, visited, distance, halves, a_map, l):
     count = 0
 
 
-    for r, rw in enumerate(dictionary):
-        if(visited[r]):
-            continue
-        
-        prefix_len = halves[r]
+    for match_len in range(1, len(lw)):
+        print("matching strings of length", match_len)
+        print("matching strings of length", match_len)
+        left = bisect(dictionary, lw[-match_len:])
+        right = bisect(dictionary, lw[-match_len:-1] + chr(ord(lw[-1])+1))
+        print(left, right)
+        for r, rw in enumerate(dictionary[left:right]):
+            if(visited[r]):
+                continue
+            r += left
+            
+            prefix_len = halves[r]
 
-        #check how big the matching string must be
-        min_len = single_calc(suffix_len, prefix_len)
-        max_len = min(len(lw), len(rw))
+            match = single_calc(suffix_len, prefix_len)
 
-        for match_len in range(min_len, max_len + 1):
+            print("testing '" + rw + "'")
+
             #check if suffix matches prefix of next word
-            if(lw[-match_len:] == rw[0:match_len]):
+            if(lw[-match:] == rw[0:match]):
+                print("queued '" + rw + "'")
                 #visit node
                 a_map[r] = l
                 distance[r] = distance[l] + 1
                 #save the neighbour to the return list
                 neighbours[count] = r
                 count += 1
+            print("rejected '" + rw + "'")
+
         
     return neighbours[:count]
 
@@ -177,26 +193,33 @@ def find_neighbours_double(dictionary, visited, distance, halves, a_map, l):
     neighbours = np.zeros(len(dictionary), dtype=int)
     count = 0
 
+    #check how big the matching string must be
+    #min_len = double_calc(suffix_len, len(lw))
 
-    for r, rw in enumerate(dictionary):
-        if(visited[r]):
-            continue
-        
-        prefix_len = halves[r]
+    for match_len in range(suffix_len, len(lw)):
+        left = bisect(dictionary, lw[-match_len:])
+        right = bisect(dictionary, lw[-match_len:-1] + chr(ord(lw[-1])+1))
+        print("matching a suffix of", lw[-match_len:])
+        for r, rw in enumerate(dictionary[left:right]):
+            if(visited[r]):
+                continue
+            
+            r += left   
 
-        #check how big the matching string must be
-        min_len = double_calc(suffix_len, prefix_len)
-        max_len = min(len(lw), len(rw))
+            prefix_len = halves[r]
 
-        for match_len in range(min_len, max_len):
+            match = double_calc(suffix_len, prefix_len)
+
             #check if suffix matches prefix of next word
-            if(lw[-match_len:] == rw[0:match_len]):
+            if(lw[-match:] == rw[0:match]):
                 #visit node
                 a_map[r] = l
                 distance[r] = distance[l] + 1
                 #save the neighbour to the return list
                 neighbours[count] = r
                 count += 1
+
+        
         
     return neighbours[:count]
 
