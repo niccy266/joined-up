@@ -92,7 +92,7 @@ def main():
 
 
 def bfs(dictionary, halves, single, start_i, end_i):
-    
+
     end = dictionary[end_i]
 
     visited = np.array([False] * len(dictionary), dtype=bool)
@@ -103,10 +103,11 @@ def bfs(dictionary, halves, single, start_i, end_i):
     visited[start_i] = True
 
     #hashmap = dict.fromkeys(dictionary)
-    a_map = np.array([0] * len(dictionary), dtype=int)
+    a_map = np.array([-1] * len(dictionary), dtype=int)
 
     #queue the starting node and start the search
     q = queue.Queue(len(dictionary))
+    #print("Initialising the queue with starting word", dictionary[start_i])
     q.put(start_i)
     #while stack still has items
     while(not q.empty()):
@@ -118,11 +119,13 @@ def bfs(dictionary, halves, single, start_i, end_i):
             neighbours = find_neighbours_double(dictionary, visited, distance, halves, a_map, l)
         
         for i in neighbours:
-            if(i == 1):
+            if(i == end_i):
+                print(distance)
+                print(a_map)
                 r = i
                 #create a list of words joining start and end to return
                 out = [distance[r], dictionary[r]]
-                for j in range(distance[r] - 1):
+                while(a_map[r]!= -1):
                     r = a_map[r]
                     out.insert(1, dictionary[r])
 
@@ -145,11 +148,11 @@ def find_neighbours_single(dictionary, visited, distance, halves, a_map, l):
 
 
     for match_len in range(1, len(lw)):
-        print("matching strings of length", match_len)
-        print("matching strings of length", match_len)
+        #print("matching strings of length", match_len)
+        #print("matching strings of length", match_len)
         left = bisect(dictionary, lw[-match_len:])
         right = bisect(dictionary, lw[-match_len:-1] + chr(ord(lw[-1])+1))
-        print(left, right)
+        #print(left, right)
         for r, rw in enumerate(dictionary[left:right]):
             if(visited[r]):
                 continue
@@ -159,18 +162,18 @@ def find_neighbours_single(dictionary, visited, distance, halves, a_map, l):
 
             match = single_calc(suffix_len, prefix_len)
 
-            print("testing '" + rw + "'")
+            #print("testing '" + rw + "'")
 
             #check if suffix matches prefix of next word
             if(lw[-match:] == rw[0:match]):
-                print("queued '" + rw + "'")
+                #print("queued '" + rw + "'")
                 #visit node
                 a_map[r] = l
                 distance[r] = distance[l] + 1
                 #save the neighbour to the return list
                 neighbours[count] = r
                 count += 1
-            print("rejected '" + rw + "'")
+            #print("rejected '" + rw + "'")
 
         
     return neighbours[:count]
@@ -199,7 +202,7 @@ def find_neighbours_double(dictionary, visited, distance, halves, a_map, l):
     for match_len in range(suffix_len, len(lw)):
         left = bisect(dictionary, lw[-match_len:])
         right = bisect(dictionary, lw[-match_len:-1] + chr(ord(lw[-1])+1))
-        print("matching a suffix of", lw[-match_len:])
+        #print("matching a suffix of", lw[-match_len:])
         for r, rw in enumerate(dictionary[left:right]):
             if(visited[r]):
                 continue
