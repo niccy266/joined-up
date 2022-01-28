@@ -19,12 +19,16 @@ rs
 st
 tu
 uv
+re
+rea
 vw
 wx
 xy
 yz
 za
 fixhyp
+hyp
+yp
 fixhyp
 fixhyp
 fixhyp
