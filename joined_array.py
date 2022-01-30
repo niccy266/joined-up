@@ -241,3 +241,5 @@ def find_neighbours(dictionary, visited, distance, halves, a_map, l, match_metho
 
 if __name__ == "__main__":
     main()
+
+#comment
