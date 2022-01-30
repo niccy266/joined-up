@@ -24,17 +24,3 @@ wx
 xy
 yz
 za
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
-fixhyp
