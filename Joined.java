@@ -36,13 +36,10 @@ public class Joined {
             System.out.println("1 " + start + " " + end);
             System.out.println("1 " + start + " " + end);
         } else {
-            System.out.println("Searching for single link chain");
             bfs(new Single());
-            System.out.println("printing path " + endN.distance);
             printPath(endN);
-            System.out.println("Searching for double link chain");
+            
             bfs(new Double());
-            System.out.println("1 " + start + " " + end);
             printPath(endN);
         }
     }
@@ -76,7 +73,7 @@ public class Joined {
         dictionary = new String[temp2.size()];
         for(int i = 0; i < dictionary.length; i++){
             dictionary[i] = temp2.get(i);
-            System.out.println(dictionary[i]);
+            //System.out.println(i + " " + dictionary[i]);
         }
         graphFromDict();
         // save the index of the start and end word for ease of access
@@ -98,26 +95,26 @@ public class Joined {
 
         q = new LinkedList<Node>();
         q.add(startN);
-        System.out.println("visiting start node");
+        // System.out.println("visiting start node");
         startN.visit(0);
         List<Node> n;
 
         do {
             Node l = q.poll();
-            System.out.println("processing " + l.word);
+            // System.out.println("processing " + l.word);
             n = queueNeighbours(l, m);
             for(Node node : n) {
                 if(node == endN) {
-                    System.out.println("found the end " + node.word);
+                    // System.out.println("found the end " + node.word);
                     return;
                 }
-                System.out.println("queueing " + node.word);
+                // System.out.println("queueing " + node.word);
                 q.add(node);
             }
-            System.out.println(q.peek());
+            //System.out.println(q.peek());
         } while(!q.isEmpty());
         
-        System.out.println("queue was empty");
+        // System.out.println("queue was empty");
     }
 
 
@@ -130,25 +127,21 @@ public class Joined {
 
         char lastChar = lw.charAt(l.len_ - 1);
         char lastCharPlus1 = (char) (lastChar + 1);
-        for(int i = min - 1; i < l.len_ - 1; i++) {
+        for(int i = min - 1; i < l.len_; i++) {
             suffix = getSuffix(l, i);
 
             int start = bisect(dictionary, suffix + lastChar);
             int end = bisect(dictionary, suffix + lastCharPlus1);
-            
-            System.out.println(suffix + lastChar);
-            System.out.println(suffix + lastCharPlus1);
-            System.out.println(start + " " + end);
     
             for(int j = start; j < end; j++) {
-                r = graph[i];
+                r = graph[j];
                 if(r.visited) {
-                    System.out.println("already visited " + r.word);
+                    // System.out.println("already visited " + r.word);
                     continue;
                 }
                 
-                System.out.println("testing matches: " + r.word);
-                if(m.matches(l, r, i)) {
+                // System.out.println("testing matches: " + r.word);
+                if(m.matches(l, r, i + 1, suffix)) {
                     r.visit(l);
                     n.add(r);
                 }
@@ -168,7 +161,7 @@ public class Joined {
      */
     public static int bisect(String[] a, String s) {
         int i = Arrays.binarySearch(dictionary, s);
-        return (i < 0) ? -i : i;
+        return ( (i < 0) ? -i -1 : i);
     }
 
 
@@ -210,7 +203,7 @@ public class Joined {
         public void visit(int i) {
             visited = true;
             distance = i;
-            System.out.println(word + ": I was visited; " + distance);
+            // System.out.println(word + ": I was visited; " + distance);
         }
 
         public boolean equals(String s) {
@@ -226,31 +219,21 @@ public class Joined {
         return (l < r) ? l : r;
     }
 
-
     public static interface Matcher {
-        public boolean matches(Node l, Node r, int matchLen);
+        public boolean matches(Node l, Node r, int i, String match);
 
         public int minLen(Node l);
     }
 
-
     public static class Single implements Matcher {
-        public boolean matches(Node l, Node r, int matchLen){
-            return checkMatch(l, r, minLen(l));
-        }
-
-        public static boolean checkMatch(Node l, Node r, int min) {
-            String match;
-            for(int i = min; i < min(l.len_, r.len_); i++){
-                match = l.word.substring(l.len_ - i, l.len_);
-                System.out.println("trying to match " + match + " and " + 
-                                r.word.substring(0, i));
-                if(match.equals(r.word.substring(0, i))) {
-                    
-                    return true;
-                }
-            }
-            return false;
+        public  boolean matches(Node l, Node r, int i, String match) {
+            //int i = match.length() - 1;
+            // System.out.println("lengths passed " + i + " " + len);
+            // System.out.println("trying to match " + match + " and " + 
+            //                 r.word.substring(0, i));
+            if (i < minLen(l) && i < minLen(r)) return false;
+            match = l.word.substring(l.len_ - i, l.len_);
+            return match.equals(r.word.substring(0, i));
         }
 
         public int minLen(Node l){
@@ -258,7 +241,13 @@ public class Joined {
         }
     }
 
-    public static class Double extends Single{        
+    public static class Double implements Matcher{   
+        public  boolean matches(Node l, Node r, int i, String match) {
+        //int i = match.length() - 1;
+        if (i > r.len_ || i < minLen(l) || i < minLen(r)) return false;
+        match = l.word.substring(l.len_ - i, l.len_);
+        return match.equals(r.word.substring(0, i));
+    }     
         public int minLen(Node l){
             return l.half;
         }
@@ -267,10 +256,12 @@ public class Joined {
 
     private static void printPath(Node n) {
         System.out.print(n.distance);
-        for(int i = n.distance; i > 2; i--) {
-            System.out.print(" " + n.word);
+        if(n.distance == 0) return;
+        StringBuilder s = new StringBuilder();
+        for(int i = n.distance; i >= 0; i--) {
+            s.insert(0, " " + n.word);
             n = n.root;
         }
-        System.out.println();
+        System.out.println(s + " ");
     }
 }
